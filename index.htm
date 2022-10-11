@@ -161,18 +161,34 @@
             background: #555 !important;
         }
 
-        th.present {
-            border-radius: 10px 10px 0 0;
-        }
 
         td.present {
-            border-radius: 0 0 10px 10px;
+            border-radius: 10px;
         }
 
         .temp {
             position: absolute;
-            bottom: 0;
-            right: 0;
+            bottom: 0px;
+            right: 0px;
+            padding: 5px;
+            background: #555;
+            border-radius: 10px;
+
+        }
+
+        .h {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .h::after {
+            content: 'h';
+            opacity: .8;
+            font-size: 10px;
+            font-weight: normal;
         }
 
         .day {
@@ -201,6 +217,10 @@
 
         td > img {
             max-width: 100%;
+        }
+
+        .moon {
+            max-width: 50%;
         }
     </style>
 </head>
@@ -302,7 +322,11 @@
                      * Si c'est la prévision de "minuit" on créé une nouvelle journée
                      */
                     if (d.getHours() == 0) {
-                        html = ('' +
+                        if (fullHtml.length > 0) {
+                            fullHtml += '</tr>' +
+                                '</tbody>';
+                        }
+                        fullHtml += ('' +
                             '<tbody  id="d' + d.getDay() + '">' +
                             '<tr>' +
                             '<th class="day ' + ' dmod' + (d.getDay()) % 2 + '" colspan="24"><span>' + d.toLocaleDateString(window.navigator.language, {
@@ -310,10 +334,7 @@
                                 day: '2-digit'
                             }) + '</span></th>' +
                             '</tr>' +
-                            '<tr class="prevision"></tr>' +
-                            '</tbody>');
-
-                        fullHtml += (html);
+                            '<tr class="prevision">');
                     }
 
 
@@ -322,6 +343,7 @@
                      * @type {string}
                      */
                     let astre = d.getHours() < sunsetH && d.getHours() > sunriseH ? sun : moon;
+                    let astreCss = d.getHours() < sunsetH && d.getHours() > sunriseH ? 'sun' : 'moon';
                     astre = d.getHours() == sunsetH ? sunset : astre;
                     astre = d.getHours() == sunriseH ? sunrise : astre;
 
@@ -341,8 +363,8 @@
 
                     //<img src="' + rain + '" style="transform:translate(-50%, -50%) scale(' + e.hourly.precipitation[nb] / 2 + ');opacity:' + (e.hourly.precipitation[nb] * 10) + '" class="cloud" width="30" />
 
-                    $(fullHtml).find('#d' + d.getDay() + ' .prevision').append('<td class="' + classes + '" title="' + e.hourly.precipitation[nb] + 'mm">' +
-                        '<span class="h">' + d.getHours() + '</span><img src="' + astre + '" style="opacity:' + (1 - (this / 100)) + '" class="imgastre"/>' +
+                    fullHtml += ('<td class="' + classes + '" title="' + e.hourly.precipitation[nb] + 'mm">' +
+                        '<span class="h">' + d.getHours() + '</span><img src="' + astre + '" style="opacity:' + (1 - (this / 100)) + '" class="imgastre ' + astreCss + '"/>' +
                         '<img src="' + cloud + '" style="opacity:' + (e.hourly.cloudcover[nb] / 100) + '" width="30" class="cloud"/>' +
                         '' + rainT +
                         '<span class="temp">' + Math.round(e.hourly.apparent_temperature[nb]) +
@@ -352,7 +374,8 @@
                     nb++;
                 });
 
-
+                fullHtml += '</tr>' +
+                    '</tbody>';
                 $('#root').html(fullHtml);
 
             });
