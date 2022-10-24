@@ -350,7 +350,7 @@
                     //  $(fullHtml).find('#d' + d.getDay() + ' .time').append('<th class="' + classes + '"><span>' + (d.getHours()) + '</span></th>');
 
                     let rainT = '';
-                    for (var p = 0; p <= e.hourly.precipitation[nb] * 10; p++) {
+                    for (var p = 0; p < e.hourly.precipitation[nb] * 10; p++) {
                         let scale = (e.hourly.precipitation[nb] / 4);
                         if (scale < 0.1) scale = 0.1;
                         if (scale > 0.5) scale = 0.5;
