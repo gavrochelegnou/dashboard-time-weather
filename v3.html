@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Météo</title>
+
+
+    <style type="text/css">
+        body {
+            background: #000000;
+        }
+
+        .clock-day:before {
+            content: var(--timer-day);
+        }
+
+        .clock-hours:before {
+            content: var(--timer-hours);
+        }
+
+        .clock-minutes:before {
+            content: var(--timer-minutes);
+        }
+
+        .clock-seconds:before {
+            content: var(--timer-seconds);
+        }
+
+
+        .clock-container {
+            text-align: center;
+            justify-content: center;
+            display: flex;
+        }
+
+        .clock-col {
+            text-align: center;
+            margin-right: 40px;
+            margin-left: 40px;
+            min-width: 90px;
+            position: relative;
+        }
+
+        .clock-col:not(:last-child):before, .clock-col:not(:last-child):after {
+            content: "";
+            background-color: rgba(255, 255, 255, 0.3);
+            height: 5px;
+            width: 5px;
+            border-radius: 50%;
+            display: block;
+            position: absolute;
+            right: -42px;
+        }
+
+        .clock-col:not(:last-child):before {
+            top: 35%;
+        }
+
+        .clock-col:not(:last-child):after {
+            top: 50%;
+        }
+
+        .clock-timer:before {
+            color: #fff;
+            font-size: 4.2rem;
+            text-transform: uppercase;
+        }
+
+        .clock-label {
+            color: rgba(255, 255, 255, 0.35);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 825px) {
+            .clock-container {
+                flex-direction: column;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+
+            .clock-col + .clock-col {
+                margin-top: 20px;
+            }
+
+            .clock-col:before, .clock-col:after {
+                display: none !important;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        body {
+            font-family: sans-serif;
+        }
+
+        .cloud, .rain {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .rain {
+            counter-increment: les-gouttes;
+            animation: pluie 3s infinite linear;
+            animation-delay: calc(var(--animation-order) * 300ms);
+            opacity: 0;
+        }
+
+        td {
+            counter-reset: les-gouttes;
+        }
+
+
+        @keyframes pluie {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+            100% {
+                top: 30px;
+                opacity: 0;
+            }
+        }
+
+
+        td, th {
+            font-size: 11px;
+            position: relative;
+            text-align: center;
+            background: #000000;
+            padding: 5px;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        th {
+            font-weight: bold;
+            font-size: 10px;
+            background: #000;
+        }
+
+        .dmod1 {
+
+        }
+
+        .present {
+
+            background: #555 !important;
+        }
+
+
+        td.present {
+            border-radius: 10px;
+        }
+
+        .temp {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            padding: 5px;
+            background: #555;
+            border-radius: 10px;
+
+        }
+
+        .h {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .h::after {
+            content: 'h';
+            opacity: .8;
+            font-size: 10px;
+            font-weight: normal;
+        }
+
+        .day {
+            text-align: left;
+        }
+
+
+        .past {
+            opacity: .5;
+            /*      padding: 0 !important;
+                  border: 0 !important;
+                  font-size: 0;
+                  margin-left: -2px;
+                  border-collapse: collapse;*/
+        }
+
+        /*
+                .past * {
+                    display: none;
+                }*/
+
+        #map {
+            width: 100%;
+            height: 300px;
+        }
+
+        td > img, .cloud {
+            width: 100%;
+        }gen
+
+        .cloudcover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #666;;
+        }
+
+        td {
+            height: 40px;
+        }
+
+        .daytime {
+            background: skyblue;
+        }
+
+        .nightime {
+            background: url(stars.svg) center center no-repeat black;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="clock-container">
+    <!--    <div class="clock-col">-->
+    <!--        <p class="clock-day clock-timer">-->
+    <!--        </p>-->
+    <!--        <p class="clock-label">-->
+    <!--            Day-->
+    <!--        </p>-->
+    <!--    </div>-->
+    <div class="clock-col">
+        <p class="clock-hours clock-timer">
+        </p>
+        <p class="clock-label">
+            Hours
+        </p>
+    </div>
+    <div class="clock-col">
+        <p class="clock-minutes clock-timer">
+        </p>
+        <p class="clock-label">
+            Minutes
+        </p>
+    </div>
+    <div class="clock-col">
+        <p class="clock-seconds clock-timer">
+        </p>
+        <p class="clock-label">
+            Seconds
+        </p>
+    </div>
+</div>
+<table id="root"></table>
+
+<div id="map"></div>
+
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+
+    const params = new URLSearchParams(window.location.search);
+
+    let defLat = params.get('lat') ? params.get('lat') : 48.876760;
+    let defLng = params.get('lng') ? params.get('lng') : 2.354360;
+
+
+    $(document).ready(loadMeteo);
+
+
+    function loadMeteo() {
+        let sun = 'sun.svg';//<img src="https://img.icons8.com/color/48/000000/sun--v1.png"/>
+        let sunset = 'sunset.svg';
+        let sunrise = 'sunrise.svg';
+        let moon = 'moon.svg';
+        let cloud = 'clouds.svg';
+        let rain = 'rain.svg';
+        let start = Date.now();
+        let html = '';
+
+
+        jQuery.getJSON('https://api.open-meteo.com/v1/forecast?latitude=' + defLat + '&longitude=' + defLng + '&hourly=apparent_temperature,precipitation,cloudcover,windspeed_10m&timezone=Europe%2FParis&daily=sunrise,sunset',
+            function (e) {
+                console.log(e);
+                /**
+                 * Levé / couché de soleil en heure numérique
+                 * @type {number}
+                 */
+                let sunriseH = new Date(Date.parse(e.daily.sunrise[0])).getHours();
+                let sunsetH = new Date(Date.parse(e.daily.sunset[0])).getHours();
+                let nb = 0;
+
+                /**
+                 * Parcours du tableau
+                 */
+                let previousColor = '#000000';
+                let previousColorCloud = '#000000';
+                let fullHtml = '';
+                $(e.hourly.time).each(function () {
+
+                    /**
+                     * Heure de la prévision
+                     * @type {Date}
+                     */
+                    let d = new Date(this);
+
+                    /**
+                     * Temps passé entre le temps présent et cette prévision
+                     * @type {number}
+                     */
+                    let elapsed = Math.round((d - start) / 3600 / 1000);
+
+                    /**
+                     * Si c'est la prévision de "minuit" on créé une nouvelle journée
+                     */
+                    if (d.getHours() == 0) {
+                        previousColor = '#000000';
+                        previousColorCloud = '#000000';
+                        if (fullHtml.length > 0) {
+                            fullHtml += '</tr>' +
+                                '</tbody>';
+                        }
+                        fullHtml += ('' +
+                            '<tbody  id="d' + d.getDay() + '">' +
+                            '<tr>' +
+                            '<th class="day ' + ' dmod' + (d.getDay()) % 2 + '" colspan="24"><span>' + d.toLocaleDateString(window.navigator.language, {
+                                weekday: 'long',
+                                day: '2-digit'
+                            }) + '</span></th>' +
+                            '</tr>' +
+                            '<tr class="prevision">');
+                    }
+
+
+                    /**
+                     * Soleil / Soleil couchant/levant / Lune
+                     * @type {string}
+                     */
+                    let dayNight = d.getHours() < sunsetH && d.getHours() > sunriseH ? 'daytime' : 'nightime';
+                    let newColor = d.getHours() < sunsetH && d.getHours() > sunriseH ? 'skyblue' : '#070B34';
+                    dayNight = d.getHours() == sunsetH ? 'sunset' : dayNight;
+                    dayNight = d.getHours() == sunriseH ? 'sunrise' : dayNight;
+
+                    let
+                        classes = dayNight + ' h' + d.getHours() + ' d' + d.getDay() + ' dmod' + d.getDay() % 2 + ' ' + (elapsed < -1 ? 'past' : 'futur') + ' ' + (elapsed == -1 ? 'present' : '');
+                    //  $(fullHtml).find('#d' + d.getDay() + ' .time').append('<th class="' + classes + '"><span>' + (d.getHours()) + '</span></th>');
+
+                    let rainT = '';
+                    for (var p = 0; p <= e.hourly.precipitation[nb] * 10; p++) {
+                        let scale = (e.hourly.precipitation[nb] / 4);
+                        if (scale < 0.1) scale = 0.1;
+                        if (scale > 0.5) scale = 0.5;
+
+                        rainT += '<img src="' + rain + '" style="--animation-order:' + Math.round(Math.random() * 10)
+                            + ';transform:translate(-50%, 0) scale(' + scale + ');' +
+                            ';' +
+                            'top:' + (Math.random() * 80 + 10) + '%;' +
+                            'left:' + (Math.random() * 80 + 10) + '%"' +
+                            ' class="rain" width="20" />';
+                    }
+
+                    //<img src="' + rain + '" style="transform:translate(-50%, -50%) scale(' + e.hourly.precipitation[nb] / 2 + ');opacity:' + (e.hourly.precipitation[nb] * 10) + '" class="cloud" width="30" />
+                    newColorCloud = "rgba(50,50,50," + (e.hourly.cloudcover[nb] / 100) + ")";
+                    fullHtml += ('<td style="background:linear-gradient(to right,' + previousColor + ' 10%, ' + newColor + ')" class="' + classes + '" title="' + e.hourly.precipitation[nb] + 'mm">' +
+                        '<span class="h">' + d.getHours() + '</span>' +
+                        '<div class="cloudcover" style=" background:linear-gradient(to right,' + previousColorCloud + ' 10%, ' + newColorCloud + ')"></div>' +
+                        '' + rainT +
+                        '<span class="temp">' + Math.round(e.hourly.apparent_temperature[nb]) +
+                        '°</span>' +
+                        '</td>'
+                    );
+                    previousColor = newColor;
+                    previousColorCloud = newColorCloud;
+                    nb++;
+                });
+
+                fullHtml += '</tr>' +
+                    '</tbody>';
+                $('#root').html(fullHtml);
+
+            });
+
+    }
+
+
+    var map = L.map('map').setView([defLat, defLng], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: ' '
+    }).addTo(map);
+    var marker = new L.Marker([defLat, defLng]);
+    marker.addTo(map);
+
+
+    //var geocodeService = L.esri.Geocoding.geocodeService();
+
+    map.on('click', function (e) {
+
+        window.location = '?lat=' + e.latlng.lat + '&lng=' + e.latlng.lng;
+        geocodeService.reverse().latlng(e.latlng).run(function (error, result) {
+            if (error) {
+                alert(error);
+                alert(result);
+                return;
+            }
+            console.log(result.latlng);
+            //window.location = '?lat='+e.latlng.lat+'&lng='+e.latlng.lng;
+        });
+    });
+
+    setInterval(loadMeteo, 100000);
+
+
+    document.addEventListener('DOMContentLoaded', () =>
+        requestAnimationFrame(updateTime)
+    )
+
+    function updateTime() {
+        let d = new Date();
+        let dt = new Intl.DateTimeFormat('fr-FR', {weekday: 'short', day: 'numeric'});
+        let dF = dt.formatToParts(d);
+
+        document.documentElement.style.setProperty('--timer-day', "'" + dt.format(d) + "'");
+        document.documentElement.style.setProperty('--timer-hours', "'" + String(d.getHours()).padStart(2, '0') + "'");
+        document.documentElement.style.setProperty('--timer-minutes', "'" + String(d.getMinutes()).padStart(2, '0') + "'");
+        document.documentElement.style.setProperty('--timer-seconds', "'" + String(d.getSeconds()).padStart(2, '0') + "'");
+        requestAnimationFrame(updateTime);
+    }
+
+</script>
+</body>
+</html>
